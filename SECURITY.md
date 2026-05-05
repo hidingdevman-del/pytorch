@@ -1,20 +1,20 @@
-# Security Policy
+# السياسة الأمنية.
 
- - [**Reporting a Vulnerability**](#reporting-a-vulnerability)
- - [**Issues That Are Not Security Vulnerabilities**](#issues-that-are-not-security-vulnerabilities)
- - [**Using PyTorch Securely**](#using-pytorch-securely)
-   - [Untrusted models](#untrusted-models)
-   - [TorchScript models](#torchscript-models)
-   - [Untrusted inputs](#untrusted-inputs)
-   - [Data privacy](#data-privacy)
-   - [Using distributed features](#using-distributed-features)
-- [**Backporting Security Fixes**](#security-fixes-and-old-releases)
-- [**CI/CD security principles**](#cicd-security-principles)
-## Reporting Security Issues
+ - [**الإبلاغ عن الضعف**](#الإبلاغ عن الضعف)
+ - [**القضايا التي ليست نقاط ضعف أمنية.**](#القضايا التي ليست نقاط ضعف أمنية)
+ - [**استخدام PyTorch بشكل آمن**](#استخدام الشعلة-آمنة)
+   - [نماذج غير موثوق بها.](#نماذج غير موثوق بها)
+   - [نماذج الشعلة السيناريو](#النماذج الشعلة)
+   - [مدخلات غير موثوق بها.](#المدخلات غير الموثوق بها)
+   - [خصوصية البيانات.](# البيانات-الخصوصية)
+   - [استخدام الميزات الموزعة.](#استخدام الميزات الموزعة)
+- [**إصلاحات أمنية للنقل الخلفي.**](#الإصلاحات الأمنية والإصدارات القديمة)
+- [**CI / CD مبادئ الأمن**](#cid-الضمان والمبادئ)
+## الإبلاغ عن القضايا الأمنية.
 
-Beware that none of the topics under [Using PyTorch Securely](#using-pytorch-securely) are considered vulnerabilities of PyTorch.
+احذر من أن أيا من الموضوعات تحت...  [استخدام PyTorch بشكل آمن](#استخدام الشعلة-آمنة) تعتبر نقاط ضعف PyTorch.
 
-However, if you believe you have found a security vulnerability in PyTorch, we encourage you to let us know right away. We will investigate all legitimate reports and do our best to quickly fix the problem.
+ومع ذلك، إذا كنت تعتقد أنك وجدت ثغرة أمنية في PyTorch، فنحن نشجعك على إخبارنا على الفور. سنحقق في جميع التقارير المشروعة ونبذل قصارى جهدنا لإصلاح المشكلة بسرعة.
 
 Please report security issues using https://github.com/pytorch/pytorch/security/advisories/new
 

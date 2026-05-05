@@ -1531,6 +1531,11 @@ class UserDefinedObjectVariable(UserDefinedVariable):
             )
         return result
 
+    def reconstruct_pycode(self, codegen) -> str:
+        if self.source:
+            return self.source.reconstruct_pycode(codegen)
+        raise NotImplementedError
+
     def nb_index_impl(
         self,
         tx: "InstructionTranslator",

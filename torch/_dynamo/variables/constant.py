@@ -491,6 +491,9 @@ class ConstantVariable(VariableTracker):
         # bool inherits nb_negative from int via slot inheritance.
         return ConstantVariable.create(-self.value)
 
+    def reconstruct_pycode(self, codegen) -> str:
+        return repr(self.value)
+
 
 CONSTANT_VARIABLE_NONE = ConstantVariable(None)
 CONSTANT_VARIABLE_TRUE = ConstantVariable(True)

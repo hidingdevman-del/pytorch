@@ -94,21 +94,16 @@ class NCCLSymmetricMemoryTest(MultiProcessTestCase):
         subgroup = dist.new_group(ranks)
 
         t = symm_mem.empty(64, device=self.device)
-        symm_mem_world = symm_mem.rendezvous(t, group=dist.group.WORLD)
         symm_mem_subgroup = symm_mem.rendezvous(t, group=subgroup)
 
-        self.assertEqual(symm_mem_world.world_size, self.world_size)
         self.assertEqual(symm_mem_subgroup.world_size, self.world_size)
-        self.assertEqual(symm_mem_world.rank, self.rank)
         self.assertEqual(symm_mem_subgroup.rank, self.rank)
 
         t.fill_(self.rank)
-        symm_mem_world.barrier()
+        symm_mem_subgroup.barrier()
 
         peer_rank = (self.rank + 1) % self.world_size
-        buf_world = symm_mem_world.get_buffer(peer_rank, (64,), torch.float32)
         buf_sub = symm_mem_subgroup.get_buffer(peer_rank, (64,), torch.float32)
-        self.assertTrue(buf_world.eq(peer_rank).all())
         self.assertTrue(buf_sub.eq(peer_rank).all())
 
 

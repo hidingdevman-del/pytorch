@@ -35,6 +35,7 @@ from torch._dynamo.test_case import TestCase
 from torch._dynamo.testing import normalize_gm
 from torch._export import config
 from torch._export.pass_base import _ExportPassBaseDeprecatedDoNotUse
+from torch._export.serde import register_unsafe_export_callable
 from torch._export.utils import (
     get_buffer,
     get_param,
@@ -43,6 +44,13 @@ from torch._export.utils import (
     register_dataclass_as_pytree_node,
 )
 from torch._functorch.aot_autograd import aot_export_joint_with_descriptors
+from torch._functorch.predispatch import (
+    _add_batch_dim,
+    _remove_batch_dim,
+    _vmap_decrement_nesting,
+    _vmap_increment_nesting,
+    lazy_load_decompositions,
+)
 from torch._higher_order_ops.associative_scan import associative_scan
 from torch._higher_order_ops.hints_wrap import hints_wrapper
 from torch._higher_order_ops.scan import scan
@@ -823,6 +831,14 @@ class TestExport(TestCase):
                 vmapped = torch.vmap(f)(x, y)
                 return vmapped.sum(dim=0)
 
+        # See comment in test_vmap for why registration is needed.
+        register_unsafe_export_callable(
+            _vmap_increment_nesting,
+            _vmap_decrement_nesting,
+            _add_batch_dim,
+            _remove_batch_dim,
+            lazy_load_decompositions,
+        )
         ep = export(VmapToAssert(), (torch.zeros(4, 4, 4, 4), torch.zeros(4, 4, 4, 4)))
         exported = ep.module()(torch.ones(4, 4, 4, 4), torch.ones(4, 4, 4, 4))
         eager = VmapToAssert()(torch.ones(4, 4, 4, 4), torch.ones(4, 4, 4, 4))
@@ -3756,6 +3772,16 @@ graph():
         DYN = torch.export.Dim.DYNAMIC
         inputs = (torch.tensor([1.0, 2.0, 3.0]), torch.tensor([0.1, 0.2, 0.3]))
         dynamic = {"x": {0: DYN}, "y": {0: DYN}}
+        # vmap produces predispatch callable nodes that need to be registered
+        # for serialization. Registration is needed here so that when test_serdes
+        # replaces export() with a mock that calls save/load, the callables are allowed.
+        register_unsafe_export_callable(
+            _vmap_increment_nesting,
+            _vmap_decrement_nesting,
+            _add_batch_dim,
+            _remove_batch_dim,
+            lazy_load_decompositions,
+        )
         ep = torch.export.export(Vmap(), inputs, {}, dynamic_shapes=dynamic)
         self.assertExpectedInline(
             str(ep.graph).strip(),

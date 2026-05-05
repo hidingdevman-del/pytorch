@@ -50,11 +50,17 @@ class NCCLSymmetricMemoryTest(MultiProcessTestCase):
         symm_mem.set_backend("NCCL")
         torch.cuda.set_device(self.device)
         store = dist.FileStore(self.file_name, self.world_size)
+        # device_id ensures the default PG is constructed with
+        # bound_device_id, which (1) eagerly connects WORLD's NCCL comm and
+        # (2) makes new_group take the split-from path so subgroups also
+        # eagerly init. Without this, getCommPtr() returns NULL and
+        # ncclCommWindowRegister fails with `comm argument is NULL`.
         dist.init_process_group(
             backend="nccl",
             world_size=self.world_size,
             rank=self.rank,
             store=store,
+            device_id=self.device,
         )
 
     @skipIf(
@@ -75,7 +81,9 @@ class NCCLSymmetricMemoryTest(MultiProcessTestCase):
         self.assertEqual(symm_mem_world.rank, self.rank)
 
         t.fill_(self.rank)
-        symm_mem_world.barrier()
+        # NCCLSymmetricMemory::barrier is NYI on this backend; use the
+        # regular collective barrier to synchronize after fill.
+        dist.barrier()
 
         peer_rank = (self.rank + 1) % self.world_size
         buf_world = symm_mem_world.get_buffer(peer_rank, (64,), torch.float32)
@@ -100,7 +108,9 @@ class NCCLSymmetricMemoryTest(MultiProcessTestCase):
         self.assertEqual(symm_mem_subgroup.rank, self.rank)
 
         t.fill_(self.rank)
-        symm_mem_subgroup.barrier()
+        # NCCLSymmetricMemory::barrier is NYI on this backend; use the
+        # regular collective barrier on the subgroup.
+        dist.barrier(group=subgroup)
 
         peer_rank = (self.rank + 1) % self.world_size
         buf_sub = symm_mem_subgroup.get_buffer(peer_rank, (64,), torch.float32)
